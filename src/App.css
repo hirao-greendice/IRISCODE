@@ -127,6 +127,6 @@
 
 @media (max-width: 720px) {
   .game-stage {
-    width: min(100%, calc(100svw - 32px));
+    width: min(100%, calc(100svw - 12px));
   }
 }
