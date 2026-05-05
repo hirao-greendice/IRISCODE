@@ -2,7 +2,8 @@ import { useCallback, useRef } from 'react'
 import type { PointerEventHandler } from 'react'
 import type { Direction } from './types'
 
-const SWIPE_THRESHOLD_PX = 18
+const SWIPE_THRESHOLD_PX = 24
+const SWIPE_REARM_DELAY_MS = 180
 
 interface SwipePoint {
   x: number
@@ -10,7 +11,9 @@ interface SwipePoint {
 }
 
 interface SwipeSession {
+  armed: boolean
   anchor: SwipePoint
+  current: SwipePoint
   pointerId: number
 }
 
@@ -43,6 +46,33 @@ function isControlButton(target: EventTarget | null) {
 
 export function useSwipeMove({ onStep }: UseSwipeMoveOptions) {
   const sessionRef = useRef<SwipeSession | null>(null)
+  const rearmTimeoutRef = useRef<number | null>(null)
+
+  const clearRearmTimeout = useCallback(() => {
+    if (rearmTimeoutRef.current !== null) {
+      window.clearTimeout(rearmTimeoutRef.current)
+      rearmTimeoutRef.current = null
+    }
+  }, [])
+
+  const scheduleRearm = useCallback(() => {
+    clearRearmTimeout()
+    rearmTimeoutRef.current = window.setTimeout(() => {
+      const session = sessionRef.current
+
+      if (!session) {
+        rearmTimeoutRef.current = null
+        return
+      }
+
+      sessionRef.current = {
+        ...session,
+        armed: true,
+        anchor: session.current,
+      }
+      rearmTimeoutRef.current = null
+    }, SWIPE_REARM_DELAY_MS)
+  }, [clearRearmTimeout])
 
   const handlePointerDown = useCallback<PointerEventHandler<HTMLElement>>(
     (event) => {
@@ -50,14 +80,17 @@ export function useSwipeMove({ onStep }: UseSwipeMoveOptions) {
         return
       }
 
+      clearRearmTimeout()
       sessionRef.current = {
+        armed: true,
         anchor: { x: event.clientX, y: event.clientY },
+        current: { x: event.clientX, y: event.clientY },
         pointerId: event.pointerId,
       }
 
       event.currentTarget.setPointerCapture(event.pointerId)
     },
-    [],
+    [clearRearmTimeout],
   )
 
   const handlePointerMove = useCallback<PointerEventHandler<HTMLElement>>(
@@ -68,8 +101,19 @@ export function useSwipeMove({ onStep }: UseSwipeMoveOptions) {
         return
       }
 
-      const deltaX = event.clientX - session.anchor.x
-      const deltaY = event.clientY - session.anchor.y
+      const nextPoint = { x: event.clientX, y: event.clientY }
+      sessionRef.current = {
+        ...session,
+        current: nextPoint,
+      }
+
+      if (!session.armed) {
+        scheduleRearm()
+        return
+      }
+
+      const deltaX = nextPoint.x - session.anchor.x
+      const deltaY = nextPoint.y - session.anchor.y
       const nextDirection = getSwipeDirection(deltaX, deltaY)
 
       if (!nextDirection) {
@@ -80,11 +124,14 @@ export function useSwipeMove({ onStep }: UseSwipeMoveOptions) {
       onStep(nextDirection)
 
       sessionRef.current = {
-        anchor: { x: event.clientX, y: event.clientY },
+        armed: false,
+        anchor: nextPoint,
+        current: nextPoint,
         pointerId: event.pointerId,
       }
+      scheduleRearm()
     },
-    [onStep],
+    [onStep, scheduleRearm],
   )
 
   const handlePointerUp = useCallback<PointerEventHandler<HTMLElement>>(
@@ -95,10 +142,11 @@ export function useSwipeMove({ onStep }: UseSwipeMoveOptions) {
         return
       }
 
+      clearRearmTimeout()
       sessionRef.current = null
       event.currentTarget.releasePointerCapture(event.pointerId)
     },
-    [],
+    [clearRearmTimeout],
   )
 
   const handlePointerCancel = useCallback<PointerEventHandler<HTMLElement>>(
@@ -109,9 +157,10 @@ export function useSwipeMove({ onStep }: UseSwipeMoveOptions) {
         return
       }
 
+      clearRearmTimeout()
       sessionRef.current = null
     },
-    [],
+    [clearRearmTimeout],
   )
 
   return {
