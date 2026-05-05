@@ -14,10 +14,10 @@ const KEY_TO_DIRECTION: Record<string, Direction> = {
   d: 'right',
 }
 
-export const PLAYER_MOVE_MS = 140
-export const CAMERA_SLIDE_MS = 480
-export const HELD_MOVE_INITIAL_DELAY_MS = 220
-export const HELD_MOVE_REPEAT_MS = 180
+export const PLAYER_MOVE_MS = 160
+export const CAMERA_SLIDE_MS = 600
+export const HELD_MOVE_INITIAL_DELAY_MS = 250
+export const HELD_MOVE_REPEAT_MS = 190
 
 export function useGame() {
   const [player, setPlayer] = useState<PlayerState>(INITIAL_PLAYER_STATE)
