@@ -14,15 +14,17 @@ const KEY_TO_DIRECTION: Record<string, Direction> = {
   d: 'right',
 }
 
-export const INPUT_REPEAT_MS = 140
 export const PLAYER_MOVE_MS = 140
 export const CAMERA_SLIDE_MS = 480
+export const HELD_MOVE_INITIAL_DELAY_MS = 220
+export const HELD_MOVE_REPEAT_MS = 180
 
 export function useGame() {
   const [player, setPlayer] = useState<PlayerState>(INITIAL_PLAYER_STATE)
   const heldDirectionsRef = useRef<Direction[]>([])
   const stepTimeoutRef = useRef<number | null>(null)
   const runStepRef = useRef<() => void>(() => {})
+  const hasRepeatedRef = useRef(false)
 
   const getActiveDirection = useCallback(() => {
     const directions = heldDirectionsRef.current
@@ -37,6 +39,7 @@ export function useGame() {
     if (heldDirectionsRef.current.length === 0 && stepTimeoutRef.current !== null) {
       window.clearTimeout(stepTimeoutRef.current)
       stepTimeoutRef.current = null
+      hasRepeatedRef.current = false
     }
   }, [])
 
@@ -45,6 +48,7 @@ export function useGame() {
 
     if (!direction) {
       stepTimeoutRef.current = null
+      hasRepeatedRef.current = false
       return
     }
 
@@ -58,9 +62,14 @@ export function useGame() {
       return result.player
     })
 
+    const nextDelay = hasRepeatedRef.current
+      ? HELD_MOVE_REPEAT_MS
+      : HELD_MOVE_INITIAL_DELAY_MS
+
+    hasRepeatedRef.current = true
     stepTimeoutRef.current = window.setTimeout(() => {
       runStepRef.current()
-    }, INPUT_REPEAT_MS)
+    }, nextDelay)
   }, [getActiveDirection])
 
   useEffect(() => {
@@ -75,6 +84,7 @@ export function useGame() {
       ]
 
       if (stepTimeoutRef.current === null) {
+        hasRepeatedRef.current = false
         runStep()
       }
     },
@@ -118,6 +128,7 @@ export function useGame() {
         window.clearTimeout(stepTimeoutRef.current)
       }
       stepTimeoutRef.current = null
+      hasRepeatedRef.current = false
     }
   }, [])
 
