@@ -1,4 +1,12 @@
-import type { CameraPresetMap, PlayerState, StageData, StageTile, TileKind } from './types'
+import type {
+  CameraPresetMap,
+  GameState,
+  PlayerState,
+  RedState,
+  StageData,
+  StageTile,
+  TileKind,
+} from './types'
 
 const STAGE_LAYOUT = [
   '####################',
@@ -123,4 +131,15 @@ export const STAGE_DATA = buildStage()
 
 export const INITIAL_PLAYER_STATE: PlayerState = {
   position: { x: 2, y: 2 },
+  direction: 'down',
+}
+
+export const INITIAL_RED_STATE: RedState = {
+  position: { x: 2, y: 4 },
+  direction: 'up',
+}
+
+export const INITIAL_GAME_STATE: GameState = {
+  player: INITIAL_PLAYER_STATE,
+  red: INITIAL_RED_STATE,
 }

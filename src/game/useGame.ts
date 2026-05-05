@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { getCamera, movePlayer } from './logic'
-import type { Direction, PlayerState } from './types'
-import { CAMERA_PRESETS, INITIAL_PLAYER_STATE, STAGE_DATA } from './world'
+import { getCamera, stepGame } from './logic'
+import type { Direction, GameState } from './types'
+import { CAMERA_PRESETS, INITIAL_GAME_STATE, STAGE_DATA } from './world'
 
 const KEY_TO_DIRECTION: Record<string, Direction> = {
   arrowup: 'up',
@@ -20,21 +20,21 @@ export const HELD_MOVE_INITIAL_DELAY_MS = 250
 export const HELD_MOVE_REPEAT_MS = 190
 
 export function useGame() {
-  const [player, setPlayer] = useState<PlayerState>(INITIAL_PLAYER_STATE)
+  const [game, setGame] = useState<GameState>(INITIAL_GAME_STATE)
   const heldDirectionsRef = useRef<Direction[]>([])
   const stepTimeoutRef = useRef<number | null>(null)
   const runStepRef = useRef<() => void>(() => {})
   const hasRepeatedRef = useRef(false)
 
   const stepMove = useCallback((direction: Direction) => {
-    setPlayer((currentPlayer) => {
-      const result = movePlayer(STAGE_DATA, currentPlayer, direction)
+    setGame((currentGame) => {
+      const result = stepGame(STAGE_DATA, currentGame, direction)
 
       if (result.type === 'blocked') {
-        return currentPlayer
+        return currentGame
       }
 
-      return result.player
+      return result.game
     })
   }, [])
 
@@ -138,10 +138,11 @@ export function useGame() {
 
   return {
     cameraSlideDurationMs: CAMERA_SLIDE_MS,
-    camera: getCamera(STAGE_DATA, CAMERA_PRESETS, player.position),
+    camera: getCamera(STAGE_DATA, CAMERA_PRESETS, game.player.position),
     move,
-    player,
+    player: game.player,
     playerMoveDurationMs: PLAYER_MOVE_MS,
+    red: game.red,
     releaseMove,
     stepMove,
     stage: STAGE_DATA,

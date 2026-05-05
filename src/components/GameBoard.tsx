@@ -1,16 +1,39 @@
 import type { CSSProperties } from 'react'
-import type { CameraState, PlayerState, StageData, StageTile, TileKind } from '../game/types'
+import type {
+  CameraState,
+  Direction,
+  GridPosition,
+  PlayerState,
+  RedState,
+  StageData,
+  StageTile,
+  TileKind,
+} from '../game/types'
 import floorImage from '../assets/floor.webp'
 import hole1Image from '../assets/hole1.webp'
 import hole2Image from '../assets/hole2.webp'
-import playerImage from '../assets/player.webp'
+
+type CharacterSpriteSet = 'white' | 'red'
+
+const directionalSpriteModules = import.meta.glob('../assets/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
 
 interface GameBoardProps {
   camera: CameraState
   cameraSlideDurationMs: number
   player: PlayerState
   playerMoveDurationMs: number
+  red: RedState
   stage: StageData
+}
+
+interface CharacterSprite {
+  id: string
+  direction: Direction
+  position: GridPosition
+  spriteSet: CharacterSpriteSet
 }
 
 function getTileClassName(tile: TileKind) {
@@ -35,11 +58,29 @@ function getTileImage(stage: StageData, tile: StageTile, x: number, y: number) {
   return aboveTile?.kind === 'ground' ? hole1Image : hole2Image
 }
 
+function getCharacterImage(spriteSet: CharacterSpriteSet, direction: Direction) {
+  // Directional sprite names: white-up.webp, white-down.webp, red-left.webp, etc.
+  const directionalImage = directionalSpriteModules[`../assets/${spriteSet}-${direction}.webp`]
+
+  if (directionalImage) {
+    return directionalImage
+  }
+
+  return (
+    directionalSpriteModules[`../assets/${spriteSet}-down.webp`]
+    ?? directionalSpriteModules[`../assets/${spriteSet}-up.webp`]
+    ?? directionalSpriteModules[`../assets/${spriteSet}-left.webp`]
+    ?? directionalSpriteModules[`../assets/${spriteSet}-right.webp`]
+    ?? ''
+  )
+}
+
 export function GameBoard({
   camera,
   cameraSlideDurationMs,
   player,
   playerMoveDurationMs,
+  red,
   stage,
 }: GameBoardProps) {
   const { frame } = camera
@@ -47,8 +88,8 @@ export function GameBoard({
   const viewportTileHeight = 100 / frame.rows
   const worldTileWidth = 100 / stage.columns
   const worldTileHeight = 100 / stage.rows
-  const playerWidthScale = 0.95
-  const playerHeightScale = 1.5
+  const characterWidthScale = 0.95
+  const characterHeightScale = 1.5
   const worldStyle = {
     width: `${(stage.columns / frame.columns) * 100}%`,
     height: `${(stage.rows / frame.rows) * 100}%`,
@@ -58,17 +99,23 @@ export function GameBoard({
     gridTemplateColumns: `repeat(${stage.columns}, 1fr)`,
     gridTemplateRows: `repeat(${stage.rows}, 1fr)`,
   } as CSSProperties
-  const playerStyle = {
-    width: `${worldTileWidth * playerWidthScale}%`,
-    height: `${worldTileHeight * playerHeightScale}%`,
-    left: `${(player.position.x + 0.5) * worldTileWidth}%`,
-    top: `${(player.position.y + 1) * worldTileHeight}%`,
-    transform: 'translate(-50%, -100%)',
-    transitionDuration: `${playerMoveDurationMs}ms`,
-  } as CSSProperties
-  const playerTokenStyle = {
-    backgroundImage: `url(${playerImage})`,
-  } as CSSProperties
+  const characters = ([
+    {
+      id: 'player',
+      direction: player.direction,
+      position: player.position,
+      spriteSet: 'white',
+    },
+    {
+      id: 'red',
+      direction: red.direction,
+      position: red.position,
+      spriteSet: 'red',
+    },
+  ] satisfies CharacterSprite[]).sort((left, right) => (
+    left.position.y - right.position.y
+    || left.position.x - right.position.x
+  ))
 
   return (
     <div className="stage-viewport">
@@ -92,9 +139,26 @@ export function GameBoard({
           }),
         )}
 
-        <div className="player-marker" style={playerStyle}>
-          <div className="player-token" style={playerTokenStyle} />
-        </div>
+        {characters.map((character) => {
+          const characterStyle = {
+            width: `${worldTileWidth * characterWidthScale}%`,
+            height: `${worldTileHeight * characterHeightScale}%`,
+            left: `${(character.position.x + 0.5) * worldTileWidth}%`,
+            top: `${(character.position.y + 1) * worldTileHeight}%`,
+            transform: 'translate(-50%, -100%)',
+            transitionDuration: `${playerMoveDurationMs}ms`,
+            zIndex: stage.rows + character.position.y,
+          } as CSSProperties
+          const characterTokenStyle = {
+            backgroundImage: `url(${getCharacterImage(character.spriteSet, character.direction)})`,
+          } as CSSProperties
+
+          return (
+            <div key={character.id} className="character-marker" style={characterStyle}>
+              <div className="character-token" style={characterTokenStyle} />
+            </div>
+          )
+        })}
       </div>
     </div>
   )

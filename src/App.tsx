@@ -11,6 +11,7 @@ function App() {
     move,
     player,
     playerMoveDurationMs,
+    red,
     releaseMove,
     stepMove,
     stage,
@@ -34,6 +35,7 @@ function App() {
             cameraSlideDurationMs={cameraSlideDurationMs}
             player={player}
             playerMoveDurationMs={playerMoveDurationMs}
+            red={red}
             stage={stage}
           />
         </div>

@@ -5,6 +5,14 @@ export interface GridPosition {
   y: number
 }
 
+export interface CharacterState {
+  position: GridPosition
+}
+
+export interface FacingCharacterState extends CharacterState {
+  direction: Direction
+}
+
 export type TileKind = 'ground' | 'wall'
 
 export interface StageTile {
@@ -18,8 +26,13 @@ export interface StageData {
   tiles: StageTile[][]
 }
 
-export interface PlayerState {
-  position: GridPosition
+export type PlayerState = FacingCharacterState
+
+export type RedState = FacingCharacterState
+
+export interface GameState {
+  player: PlayerState
+  red: RedState
 }
 
 export interface CameraFrame {
@@ -38,4 +51,4 @@ export interface CameraState {
   id: number
 }
 
-export type MoveResult = { type: 'blocked' } | { type: 'step'; player: PlayerState }
+export type GameStepResult = { type: 'blocked' } | { type: 'step'; game: GameState }
