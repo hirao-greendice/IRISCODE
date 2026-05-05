@@ -19,22 +19,44 @@ export const CAMERA_SLIDE_MS = 500
 export const HELD_MOVE_INITIAL_DELAY_MS = 250
 export const HELD_MOVE_REPEAT_MS = 190
 
+interface GameSessionState {
+  game: GameState
+  history: GameState[]
+}
+
 export function useGame() {
-  const [game, setGame] = useState<GameState>(INITIAL_GAME_STATE)
+  const [session, setSession] = useState<GameSessionState>({
+    game: INITIAL_GAME_STATE,
+    history: [],
+  })
   const heldDirectionsRef = useRef<Direction[]>([])
   const stepTimeoutRef = useRef<number | null>(null)
   const runStepRef = useRef<() => void>(() => {})
   const hasRepeatedRef = useRef(false)
 
+  const clearHeldMove = useCallback(() => {
+    heldDirectionsRef.current = []
+
+    if (stepTimeoutRef.current !== null) {
+      window.clearTimeout(stepTimeoutRef.current)
+    }
+
+    stepTimeoutRef.current = null
+    hasRepeatedRef.current = false
+  }, [])
+
   const stepMove = useCallback((direction: Direction) => {
-    setGame((currentGame) => {
-      const result = stepGame(STAGE_DATA, currentGame, direction)
+    setSession((currentSession) => {
+      const result = stepGame(STAGE_DATA, currentSession.game, direction)
 
       if (result.type === 'blocked') {
-        return currentGame
+        return currentSession
       }
 
-      return result.game
+      return {
+        game: result.game,
+        history: [...currentSession.history, currentSession.game],
+      }
     })
   }, [])
 
@@ -49,11 +71,9 @@ export function useGame() {
     )
 
     if (heldDirectionsRef.current.length === 0 && stepTimeoutRef.current !== null) {
-      window.clearTimeout(stepTimeoutRef.current)
-      stepTimeoutRef.current = null
-      hasRepeatedRef.current = false
+      clearHeldMove()
     }
-  }, [])
+  }, [clearHeldMove])
 
   const runStep = useCallback(() => {
     const direction = getActiveDirection()
@@ -128,23 +148,53 @@ export function useGame() {
 
   useEffect(() => {
     return () => {
-      if (stepTimeoutRef.current !== null) {
-        window.clearTimeout(stepTimeoutRef.current)
-      }
-      stepTimeoutRef.current = null
-      hasRepeatedRef.current = false
+      clearHeldMove()
     }
-  }, [])
+  }, [clearHeldMove])
+
+  const undo = useCallback(() => {
+    clearHeldMove()
+    setSession((currentSession) => {
+      const previousGame = currentSession.history.at(-1)
+
+      if (!previousGame) {
+        return currentSession
+      }
+
+      return {
+        game: previousGame,
+        history: currentSession.history.slice(0, -1),
+      }
+    })
+  }, [clearHeldMove])
+
+  const reset = useCallback(() => {
+    clearHeldMove()
+    setSession((currentSession) => {
+      if (currentSession.history.length === 0) {
+        return currentSession
+      }
+
+      return {
+        game: INITIAL_GAME_STATE,
+        history: [],
+      }
+    })
+  }, [clearHeldMove])
 
   return {
     cameraSlideDurationMs: CAMERA_SLIDE_MS,
-    camera: getCamera(STAGE_DATA, CAMERA_PRESETS, game.player.position),
+    camera: getCamera(STAGE_DATA, CAMERA_PRESETS, session.game.player.position),
+    canReset: session.history.length > 0,
+    canUndo: session.history.length > 0,
     move,
-    player: game.player,
+    player: session.game.player,
     playerMoveDurationMs: PLAYER_MOVE_MS,
-    red: game.red,
+    red: session.game.red,
     releaseMove,
+    reset,
     stepMove,
     stage: STAGE_DATA,
+    undo,
   }
 }
