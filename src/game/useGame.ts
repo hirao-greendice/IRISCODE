@@ -15,7 +15,7 @@ const KEY_TO_DIRECTION: Record<string, Direction> = {
 }
 
 export const PLAYER_MOVE_MS = 160
-export const CAMERA_SLIDE_MS = 600
+export const CAMERA_SLIDE_MS = 300
 export const HELD_MOVE_INITIAL_DELAY_MS = 250
 export const HELD_MOVE_REPEAT_MS = 190
 
