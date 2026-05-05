@@ -25,7 +25,7 @@
 }
 
 .controls-area {
-  width: min(100%, 360px);
+  width: min(100%, 390px);
   display: flex;
   justify-content: center;
 }
@@ -100,11 +100,11 @@
   display: flex;
   justify-content: center;
   align-items: stretch;
-  gap: 14px;
+  gap: 12px;
 }
 
 .control-pad {
-  width: min(100%, 210px);
+  width: min(100%, 228px);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(3, minmax(0, 1fr));
@@ -122,17 +122,19 @@
 }
 
 .control-actions {
-  width: min(132px, 36%);
+  width: 82px;
   display: grid;
   grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: 10px;
+  justify-items: center;
+  align-content: center;
 }
 
 .control-button {
   border: 1px solid #727272;
   border-radius: 12px;
   aspect-ratio: 1 / 1;
-  font-size: 1.45rem;
+  font-size: 1.62rem;
   font-weight: 400;
   color: #f3f3f3;
   background: #222;
@@ -142,11 +144,14 @@
 }
 
 .control-action-button {
-  aspect-ratio: auto;
-  min-height: 62px;
-  padding: 10px 12px;
-  font-size: 0.98rem;
-  line-height: 1.2;
+  width: 72px;
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+  padding: 0;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  line-height: 1;
+  letter-spacing: 0.03em;
 }
 
 .control-button:hover:enabled {
@@ -173,7 +178,7 @@
   }
 
   .controls-area {
-    width: min(100%, 340px);
+    width: min(100%, 370px);
   }
 
   .control-layout {
@@ -181,10 +186,15 @@
   }
 
   .control-pad {
-    width: min(100%, 196px);
+    width: min(100%, 212px);
   }
 
   .control-actions {
-    width: min(126px, 38%);
+    width: 76px;
+  }
+
+  .control-action-button {
+    width: 66px;
+    font-size: 0.68rem;
   }
 }

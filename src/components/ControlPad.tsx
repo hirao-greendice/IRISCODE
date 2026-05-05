@@ -99,7 +99,7 @@ export function ControlPad({
           disabled={undoDisabled}
           onClick={onUndo}
         >
-          行って戻る
+          UNDO
         </button>
         <button
           type="button"
@@ -108,7 +108,7 @@ export function ControlPad({
           disabled={resetDisabled}
           onClick={onReset}
         >
-          リセット
+          RESET
         </button>
       </div>
     </div>
