@@ -26,22 +26,22 @@ const STAGE_LAYOUT = [
 const CAMERA_REGION_LAYOUT = [
   'AAAAAABBBBBBCCCCCCCC',
   'AAAAAABBBBBBCCCCCCCC',
+  'AAAAAABBBBBLLCCCCCCC',
+  'AAAAAKKBBBBBCCCCCCCC',
   'AAAAAABBBBBBCCCCCCCC',
-  'AAAAAABBBBBBCCCCCCCC',
-  'AAAAAABBBBBBCCCCCCCC',
-  'AAAAAABBBBBBCCCCCCCC',
-  'DDDDDDBBBBBBCCCCCCCC',
-  'DDDDDDDEEEEEFFFFFFFF',
+  'AAMAAABBBBBBCCCCCCCC',
+  'DDMDDDBBNBBBCCCOCCCC',
+  'DDDDDDDENEEEFFFOFFFF',
   'DDDDDDDEEEEEFFFFFFFF',
   'DDDDDDEEEEEEFFFFFFFF',
   'DDDDDDEEEEEEEFFFFFFG',
-  'DDDDDDEEEEEEEFFFFGGG',
-  'HHHHHHEEEEEEEFFGGGGG',
-  'HHHHHHHEEEEEEGGGGGGG',
-  'HHHHHHHIIIIIJJGGGGGG',
-  'HHHHHHIIIIIIJJJJGGGG',
-  'HHHHHHIIIIIIJJJJJJJG',
-  'HHHHHHIIIIIIJJJJJJJJ',
+  'DDDPDDEEEEEEEFFFFGGG',
+  'HHHPHHEEEEEEEFFGGGGG',
+  'HHHPHHHEQEEEEGGGGGGG',
+  'HHHHHHHIQIIIJJGGGRGG',
+  'HHHHHHIIQIIIJJJJGRGG',
+  'HHHHHSSIIIIIJJJJJRJG',
+  'HHHHHHIIIIITTJJJJJJJ',
   'HHHHHHIIIIIIJJJJJJJJ',
   'HHHHHIIIIIIIJJJJJJJJ',
 ] as const
@@ -54,30 +54,13 @@ function parseTile(symbol: string): TileKind {
 }
 
 function parseCameraId(symbol: string) {
-  switch (symbol) {
-    case 'A':
-      return 1
-    case 'B':
-      return 2
-    case 'C':
-      return 3
-    case 'D':
-      return 4
-    case 'E':
-      return 5
-    case 'F':
-      return 6
-    case 'G':
-      return 7
-    case 'H':
-      return 8
-    case 'I':
-      return 9
-    case 'J':
-      return 10
-    default:
-      throw new Error(`Unknown camera region symbol: ${symbol}`)
+  const cameraId = symbol.charCodeAt(0) - 'A'.charCodeAt(0) + 1
+
+  if (cameraId < 1 || cameraId > 20) {
+    throw new Error(`Unknown camera region symbol: ${symbol}`)
   }
+
+  return cameraId
 }
 
 function buildStage(): StageData {
@@ -124,6 +107,16 @@ export const CAMERA_PRESETS: CameraPresetMap = {
   8: { id: 8, x: 0, y: 12, columns: 7, rows: 7 },
   9: { id: 9, x: 6.5, y: 14.5, columns: 6, rows: 6 },
   10: { id: 10, x: 10, y: 10, columns: 10, rows: 10 },
+  11: { id: 11, x: 0, y: 0, columns: 12, rows: 12 },
+  12: { id: 12, x: 8, y: 0, columns: 12, rows: 12 },
+  13: { id: 13, x: 0, y: 0.5, columns: 12, rows: 12 },
+  14: { id: 14, x: 2.5, y: 1.5, columns: 12, rows: 12 },
+  15: { id: 15, x: 8, y: 1.5, columns: 12, rows: 12 },
+  16: { id: 16, x: 0, y: 8, columns: 12, rows: 12 },
+  17: { id: 17, x: 2.5, y: 8, columns: 12, rows: 12 },
+  18: { id: 18, x: 8, y: 8, columns: 12, rows: 12 },
+  19: { id: 19, x: 0, y: 8, columns: 12, rows: 12 },
+  20: { id: 20, x: 5.5, y: 8, columns: 12, rows: 12 },
 }
 
 export const STAGE_DATA = buildStage()
