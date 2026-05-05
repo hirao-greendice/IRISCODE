@@ -2,6 +2,7 @@ import './App.css'
 import { ControlPad } from './components/ControlPad'
 import { GameBoard } from './components/GameBoard'
 import { useGame } from './game/useGame'
+import { useSwipeMove } from './game/useSwipeMove'
 
 function App() {
   const {
@@ -13,9 +14,19 @@ function App() {
     releaseMove,
     stage,
   } = useGame()
+  const swipeHandlers = useSwipeMove({
+    onMove: move,
+    onMoveEnd: releaseMove,
+  })
 
   return (
-    <main className="app-shell">
+    <main
+      className="app-shell"
+      onPointerCancel={swipeHandlers.handlePointerCancel}
+      onPointerDown={swipeHandlers.handlePointerDown}
+      onPointerMove={swipeHandlers.handlePointerMove}
+      onPointerUp={swipeHandlers.handlePointerUp}
+    >
       <section className="game-layout" aria-label="Grid game prototype">
         <div className="game-stage">
           <GameBoard
