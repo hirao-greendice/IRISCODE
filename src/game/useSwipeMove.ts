@@ -10,14 +10,12 @@ interface SwipePoint {
 }
 
 interface SwipeSession {
-  activeDirection: Direction | null
   anchor: SwipePoint
   pointerId: number
 }
 
 interface UseSwipeMoveOptions {
-  onMove: (direction: Direction) => void
-  onMoveEnd: (direction: Direction) => void
+  onStep: (direction: Direction) => void
 }
 
 function getSwipeDirection(deltaX: number, deltaY: number): Direction | null {
@@ -43,22 +41,8 @@ function isControlButton(target: EventTarget | null) {
   return target instanceof Element && target.closest('.control-button') !== null
 }
 
-export function useSwipeMove({ onMove, onMoveEnd }: UseSwipeMoveOptions) {
+export function useSwipeMove({ onStep }: UseSwipeMoveOptions) {
   const sessionRef = useRef<SwipeSession | null>(null)
-
-  const endSwipe = useCallback(() => {
-    const session = sessionRef.current
-
-    if (!session) {
-      return
-    }
-
-    if (session.activeDirection) {
-      onMoveEnd(session.activeDirection)
-    }
-
-    sessionRef.current = null
-  }, [onMoveEnd])
 
   const handlePointerDown = useCallback<PointerEventHandler<HTMLElement>>(
     (event) => {
@@ -67,7 +51,6 @@ export function useSwipeMove({ onMove, onMoveEnd }: UseSwipeMoveOptions) {
       }
 
       sessionRef.current = {
-        activeDirection: null,
         anchor: { x: event.clientX, y: event.clientY },
         pointerId: event.pointerId,
       }
@@ -94,22 +77,14 @@ export function useSwipeMove({ onMove, onMoveEnd }: UseSwipeMoveOptions) {
       }
 
       event.preventDefault()
-
-      if (session.activeDirection && session.activeDirection !== nextDirection) {
-        onMoveEnd(session.activeDirection)
-      }
-
-      if (session.activeDirection !== nextDirection) {
-        onMove(nextDirection)
-      }
+      onStep(nextDirection)
 
       sessionRef.current = {
-        activeDirection: nextDirection,
         anchor: { x: event.clientX, y: event.clientY },
         pointerId: event.pointerId,
       }
     },
-    [onMove, onMoveEnd],
+    [onStep],
   )
 
   const handlePointerUp = useCallback<PointerEventHandler<HTMLElement>>(
@@ -120,10 +95,10 @@ export function useSwipeMove({ onMove, onMoveEnd }: UseSwipeMoveOptions) {
         return
       }
 
-      endSwipe()
+      sessionRef.current = null
       event.currentTarget.releasePointerCapture(event.pointerId)
     },
-    [endSwipe],
+    [],
   )
 
   const handlePointerCancel = useCallback<PointerEventHandler<HTMLElement>>(
@@ -134,9 +109,9 @@ export function useSwipeMove({ onMove, onMoveEnd }: UseSwipeMoveOptions) {
         return
       }
 
-      endSwipe()
+      sessionRef.current = null
     },
-    [endSwipe],
+    [],
   )
 
   return {

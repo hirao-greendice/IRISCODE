@@ -12,11 +12,11 @@ function App() {
     player,
     playerMoveDurationMs,
     releaseMove,
+    stepMove,
     stage,
   } = useGame()
   const swipeHandlers = useSwipeMove({
-    onMove: move,
-    onMoveEnd: releaseMove,
+    onStep: stepMove,
   })
 
   return (

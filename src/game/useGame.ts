@@ -26,6 +26,18 @@ export function useGame() {
   const runStepRef = useRef<() => void>(() => {})
   const hasRepeatedRef = useRef(false)
 
+  const stepMove = useCallback((direction: Direction) => {
+    setPlayer((currentPlayer) => {
+      const result = movePlayer(STAGE_DATA, currentPlayer, direction)
+
+      if (result.type === 'blocked') {
+        return currentPlayer
+      }
+
+      return result.player
+    })
+  }, [])
+
   const getActiveDirection = useCallback(() => {
     const directions = heldDirectionsRef.current
     return directions[directions.length - 1] ?? null
@@ -52,15 +64,7 @@ export function useGame() {
       return
     }
 
-    setPlayer((currentPlayer) => {
-      const result = movePlayer(STAGE_DATA, currentPlayer, direction)
-
-      if (result.type === 'blocked') {
-        return currentPlayer
-      }
-
-      return result.player
-    })
+    stepMove(direction)
 
     const nextDelay = hasRepeatedRef.current
       ? HELD_MOVE_REPEAT_MS
@@ -70,7 +74,7 @@ export function useGame() {
     stepTimeoutRef.current = window.setTimeout(() => {
       runStepRef.current()
     }, nextDelay)
-  }, [getActiveDirection])
+  }, [getActiveDirection, stepMove])
 
   useEffect(() => {
     runStepRef.current = runStep
@@ -139,6 +143,7 @@ export function useGame() {
     player,
     playerMoveDurationMs: PLAYER_MOVE_MS,
     releaseMove,
+    stepMove,
     stage: STAGE_DATA,
   }
 }
