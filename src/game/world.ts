@@ -114,15 +114,15 @@ function buildStage(): StageData {
 }
 
 export const CAMERA_PRESETS: CameraPresetMap = {
-  1: { id: 1, x: 0, y: 0, columns: 7, rows: 7 },
-  2: { id: 2, x: 4.5, y: 0, columns: 8, rows: 8 },
-  3: { id: 3, x: 10.5, y: 0, columns: 9, rows: 9 },
-  4: { id: 4, x: 0, y: 6, columns: 7, rows: 7 },
-  5: { id: 5, x: 4.5, y: 6, columns: 9, rows: 9 },
-  6: { id: 6, x: 12, y: 6, columns: 6, rows: 6 },
+  1: { id: 1, x: 0, y: 0, columns: 6, rows: 6 },
+  2: { id: 2, x: 5.5, y: 0.5, columns: 6, rows: 6 },
+  3: { id: 3, x: 11.5, y: 0, columns: 8, rows: 8 },
+  4: { id: 4, x: 0, y: 6, columns: 6, rows: 6 },
+  5: { id: 5, x: 5.5, y: 7, columns: 8, rows: 8 },
+  6: { id: 6, x: 13, y: 7, columns: 5, rows: 5 },
   7: { id: 7, x: 14, y: 10.5, columns: 6, rows: 6 },
-  8: { id: 8, x: 0, y: 11, columns: 8, rows: 8 },
-  9: { id: 9, x: 5.5, y: 13.5, columns: 7, rows: 7 },
+  8: { id: 8, x: 0, y: 12, columns: 7, rows: 7 },
+  9: { id: 9, x: 6.5, y: 14.5, columns: 6, rows: 6 },
   10: { id: 10, x: 10, y: 10, columns: 10, rows: 10 },
 }
 
